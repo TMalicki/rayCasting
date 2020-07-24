@@ -7,7 +7,6 @@ let windowWidth = window.innerWidth;
 canvas[0].width = windowWidth;
 canvas[0].height = windowHeight;
 
-let editorMode = true;
 
 function clearWindow()
 {
@@ -17,17 +16,18 @@ function clearWindow()
 
 function checkKey(e)
 {
-    if(e.keyCode == "101" && editorMode == true) 
+    if(e.keyCode == "101" && editor.editorMode == true) 
     {
-        editorMode = false;
+        editor.editorMode = false;
         canvas.off("click");
     }
-    else if(e.keyCode == "101" && editorMode == false) 
+    else if(e.keyCode == "101" && editor.editorMode == false) 
     {
-        editorMode = true;
+        editor.editorMode = true;
         editor.addPoint();  // that should works only in editor mode
         editor.makeFigure();    // that should works only in editor mode
     }
+    editor.fading = 0.0;
 }
 
 class Obstacle
@@ -43,55 +43,87 @@ class Editor
     constructor()
     {
         this.obstacles = [];      
-        this.newObstacle = true;  
+        this.newObstacle = true; 
+        this.fading = 0.0; 
+        this.editorMode = true;
+        this.mousePos = [];
+    
+        this.timer = 0;
+        this.delay = 200;
+        this.prevent = false;
     }
 
     addPoint()
     {
-        if(editorMode == true)
+        if(this.editorMode == true)
         {
             const that = this;
 
             canvas.click(function(e) 
             { 
-                if(that.newObstacle == true) 
+                that.timer = setTimeout(function() 
                 {
-                    that.obstacles.push(new Obstacle);
-                    that.newObstacle = false;
-                }
+                    if(!that.prevent)
+                    {
+                        if(that.newObstacle == true) 
+                        {
+                            that.obstacles.push(new Obstacle);
+                            that.newObstacle = false;
+                        }
 
-                that.obstacles[that.obstacles.length - 1].points.push([e.clientX, e.clientY])
+                        that.obstacles[that.obstacles.length - 1].points.push([e.clientX, e.clientY])
+                    }
+                    that.prevent = false;
+                }, that.delay);           
             })
         }
     }
 
-    connectPoints(that)
+    closeFigure()
     {
-        that.newObstacle = true;
+        this.obstacles[this.obstacles.length - 1].points.push(this.obstacles[this.obstacles.length - 1].points[0]);
+    }
+
+    makeFigure()
+    {
+        if(this.editorMode == true)
+        {
+            const that = this;
+            canvas.dblclick(function() { clearTimeout(that.timer); that.prevent = true; that.connectPoints(); })
+        }
     }
 
     getMousePosition()
     {
-        let mousePos = [];
-        canvas.mousemove(function(e) { mousePos = [e.clientX, e.clientY]; });
+        let that = this;
 
-        if(mousePos[0] != undefined)
-        console.log(mousePos[0] + " " + mousePos[1]);
+        canvas.mousemove(function(e) { 
+            that.mousePos = [e.clientX, e.clientY]; 
+        });
+    }
 
-        return mousePos;
+    connectPoints()
+    {
+        this.newObstacle = true;
+        this.closeFigure();
     }
 
     realTimeView()
     {
-        let mousePos = this.getMousePosition();
+        this.getMousePosition();
 
-        if(this.obstacles.length && mousePos)
+        if(this.obstacles.length && this.mousePos && this.newObstacle == false)
         {
+           // debugger;
             let lastObstacle = this.obstacles.length - 1;
             let pointsInObstacle = this.obstacles[lastObstacle].points.length;
             let lastPoint = this.obstacles[lastObstacle].points[pointsInObstacle - 1];
 
-           // console.log(mousePos[0] + " " + mousePos[1]);
+           // raycast.beginPath(this);
+            raycast.moveTo(lastPoint[0], lastPoint[1]);
+            raycast.lineTo(this.mousePos[0], this.mousePos[1]);
+            raycast.strokeStyle = 'red';
+            raycast.stroke();
         }
     }
 
@@ -113,11 +145,14 @@ class Editor
                     {
                         raycast.lineTo(points[index][0], points[index][1]);
                     }
-                    raycast.closePath();
                     raycast.strokeStyle = 'red';
                     raycast.stroke();
-                    raycast.fillStyle = 'grey';
-                    raycast.fill();
+
+                    if(points[0] == points[points.length - 1])
+                    {
+                        raycast.fillStyle = 'grey';
+                        raycast.fill();
+                    }
                 }
                 else
                 {
@@ -128,26 +163,28 @@ class Editor
                 }
             }
         }
+    }
 
+    editMode()
+    {
         raycast.font = "30px Arial";
+        raycast.globalAlpha -= this.fading;
         raycast.fillStyle = 'white';
-        if(editMode == true)
-        {
-            raycast.fillText("EditMode: OFF", 20, 50);
-        }
-        else
+        if(this.editorMode == true)
         {
             raycast.fillText("EditMode: ON", 20, 50);
         }
+        else if(this.editorMode == false)
+        {
+            raycast.fillText("EditMode: OFF", 20, 50);
+        }
+        raycast.globalAlpha = 1.0;
     }
 
-    makeFigure()
+    fadeOut(decreasing)
     {
-        if(editorMode == true)
-        {
-            const that = this;
-            canvas.dblclick(function() { that.connectPoints(that); })
-        }
+        if(this.fading < 1.0) this.fading += decreasing;
+        if(this.fading > 1.0) this.fading = 1.0;
     }
 
     editor()
@@ -162,11 +199,10 @@ let editor = new Editor();
 
 editor.addPoint();  // that should works only in editor mode
 editor.makeFigure();    // that should works only in editor mode
-editor.realTimeView();
 
 //canvas.keypress( checkKey );
 //canvas.on("keypress", function() { checkKey(); });
 //$("document").on("keypress",  checkKey);
 
 document.addEventListener("keypress", checkKey);
-setInterval(function() { clearWindow(); editor.editor(); }, 1000/60);
+setInterval(function() { clearWindow(); editor.editor(); editor.editMode(); editor.fadeOut(0.005); }, 1000/60);
