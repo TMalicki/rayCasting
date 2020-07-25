@@ -232,6 +232,8 @@ class RayVision
 
     polygonsDraw()
     {
+        let foreground = new Image();
+
         raycast.fillStyle = 'red';
         raycast.beginPath();
         raycast.moveTo(this.polygons[0].x, this.polygons[0].y);
@@ -241,6 +243,10 @@ class RayVision
             raycast.lineTo(intersects.x, intersects.y);
         }
         raycast.fill();
+
+        raycast.globalCompositeOperation = "source-in";
+        raycast.drawImage(foreground, 0, 0);
+        raycast.globalCompositeOperation = "source-over";
     }
 
     rayCastingAlgorithm()
@@ -282,6 +288,12 @@ class RayVision
                 this.obstacleLines.push([[pointsAll[pointNr - 1][0], pointsAll[pointNr - 1][1]], [pointsAll[pointNr][0], pointsAll[pointNr][1]]]);
             }
         }
+       
+        this.obstacleLines.push([[0, 0],[windowWidth, 0]],
+                                [[windowWidth, 0],[windowWidth, windowHeight]],
+                                [[windowWidth, windowHeight],[0, windowHeight]],
+                                [[0, windowHeight],[0, 0]]);
+        
     }
 
     castRays(uniqueAngles)
@@ -293,7 +305,8 @@ class RayVision
             let dy = Math.sin(uniqueAngles[angleIndex]);
 
             // line that goes through mousePos and mousePos + dx/dy (in direction of calculated angle)
-            let ray = [[this.playerPos[0], this.playerPos[1]], [this.playerPos[0] + dx, this.playerPos[1] + dy]];   // thats casted ray
+            let ray = [[this.playerPos[0], this.playerPos[1]], 
+                    [this.playerPos[0] + dx, this.playerPos[1] + dy]];   // thats casted ray
             
             // find closest intersection
             let closestIntersection = null;
@@ -321,7 +334,7 @@ class RayVision
         }
 
         //sort by angles
-        intersections = intersections.sort(function(a, b){return a.angle - b.angle;});
+        intersections = intersections.sort(function(a, b){return a.angles - b.angles;});
 
         return intersections;
     }
