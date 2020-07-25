@@ -203,6 +203,7 @@ class RayVision
         this.playerPos = [windowWidth/2, windowHeight];
         this.playerRadius = 5;
         this.playerColor = 'red';
+
         this.angles = [];
         this.obstacleLines = [];
         this.polygons = [];
@@ -244,14 +245,16 @@ class RayVision
 
     rayCastingAlgorithm()
     {
-        this.raysAngle();
+        let uniqueAngles = this.raysAngle();
         this.searchingObstacleLines();
-        this.polygons = this.castRays();
+        this.polygons = this.castRays(uniqueAngles);
         this.polygonsDraw();
     }
 
+    // seems okay
     raysAngle()
     {
+        let uniqueAngles = [];
         let obstaclesAll = editor.obstacles;
         for(let obstacleNr = 0; obstacleNr < obstaclesAll.length; obstacleNr++)
         {
@@ -260,12 +263,14 @@ class RayVision
             {
                 let actualPoint = pointsAll[pointNr];
                 let actualAngle = Math.atan2(actualPoint[1] - this.playerPos[1], actualPoint[0] - this.playerPos[0]);
-                actualPoint.angles = actualAngle;
-                this.angles.push(actualAngle - 0.00001, actualAngle, actualAngle + 0.00001);
+                uniqueAngles.angles = actualAngle;
+                uniqueAngles.push(actualAngle - 0.00001, actualAngle, actualAngle + 0.00001);
             }
         }
+        return uniqueAngles;
     }
 
+    // to check
     searchingObstacleLines()
     {
         let obstaclesAll = editor.obstacles;
@@ -279,13 +284,13 @@ class RayVision
         }
     }
 
-    castRays()
+    castRays(uniqueAngles)
     {
         let intersections = [];
-        for(let angleIndex = 0; angleIndex < this.angles.length; angleIndex++)
+        for(let angleIndex = 0; angleIndex < uniqueAngles.length; angleIndex++)
         {
-            let dx = Math.cos(this.angles[angleIndex]);
-            let dy = Math.sin(this.angles[angleIndex]);
+            let dx = Math.cos(uniqueAngles[angleIndex]);
+            let dy = Math.sin(uniqueAngles[angleIndex]);
 
             // line that goes through mousePos and mousePos + dx/dy (in direction of calculated angle)
             let ray = [[this.playerPos[0], this.playerPos[1]], [this.playerPos[0] + dx, this.playerPos[1] + dy]];   // thats casted ray
@@ -306,13 +311,13 @@ class RayVision
             }
 
             if(!closestIntersection) continue;
-            else
-            {
+      //      else
+      //      {
                 // angle for closestIntersection
-                closestIntersection.angles = this.angles[angleIndex];
+                closestIntersection.angles = uniqueAngles[angleIndex];
                 // add to list of intersections
                 intersections.push(closestIntersection);
-            }
+      //      }
         }
 
         //sort by angles
