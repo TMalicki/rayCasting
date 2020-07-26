@@ -290,17 +290,14 @@ class RayVision
         for(let obstacleNr = 0; obstacleNr < obstaclesAll.length; obstacleNr++)
         {
             let pointsAll = obstaclesAll[obstacleNr].points;
-            for(let pointNr = 1; pointNr < pointsAll.length; pointNr++)
+            for(let pointNr = 1; pointNr <= pointsAll.length; pointNr++)
             {
-                this.obstacleLines.push([[pointsAll[pointNr - 1][0], pointsAll[pointNr - 1][1]], [pointsAll[pointNr][0], pointsAll[pointNr][1]]]);
+                if(pointNr == pointsAll.length) 
+                    this.obstacleLines.push([[pointsAll[pointNr - 1][0], pointsAll[pointNr - 1][1]], [pointsAll[0][0], pointsAll[0][1]]]);
+                else
+                    this.obstacleLines.push([[pointsAll[pointNr - 1][0], pointsAll[pointNr - 1][1]], [pointsAll[pointNr][0], pointsAll[pointNr][1]]]);
             }
         }
-    /* 
-        this.obstacleLines.push([[0, 0],[windowWidth, 0]],
-                                [[windowWidth, 0],[windowWidth, windowHeight]],
-                                [[windowWidth, windowHeight],[0, windowHeight]],
-                                [[0, windowHeight],[0, 0]]);
-        */
     }
 
     castRays(uniqueAngles)
@@ -325,24 +322,18 @@ class RayVision
                 // if there was no closestIntersection or if intersection parameter is smaller than parameter stored in closestIntersection
                 if(!closestIntersection ||  intersection.param < closestIntersection.param)
                 {
-                    //debugger;
                     closestIntersection = intersection;
                 }
             }
-
             if(!closestIntersection) continue;
-      //      else
-      //      {
-                // angle for closestIntersection
-                closestIntersection.angles = uniqueAngles[angleIndex];
-                // add to list of intersections
-                intersections.push(closestIntersection);
-      //      }
+            // angle for closestIntersection
+            closestIntersection.angles = uniqueAngles[angleIndex];
+            // add to list of intersections
+            intersections.push(closestIntersection);
         }
 
         //sort by angles
         intersections = intersections.sort(function(a, b){return a.angles - b.angles;});
-
         return intersections;
     }
 
