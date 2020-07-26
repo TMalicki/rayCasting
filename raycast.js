@@ -42,7 +42,14 @@ class Editor
 {
     constructor()
     {
-        this.obstacles = [];      
+        this.obstacles = [new Obstacle];    
+        this.obstacles[0].points.push([0,0], [windowWidth, 0], [windowWidth, windowHeight], [0, windowHeight]);
+            /* 
+        this.obstacleLines.push([[0, 0],[windowWidth, 0]],
+            [[windowWidth, 0],[windowWidth, windowHeight]],
+            [[windowWidth, windowHeight],[0, windowHeight]],
+            [[0, windowHeight],[0, 0]]);
+        */
         this.newObstacle = true; 
         this.fading = 0.0; 
         this.editorMode = true;
@@ -234,7 +241,7 @@ class RayVision
     {
         let foreground = new Image();
 
-        raycast.fillStyle = 'red';
+        raycast.fillStyle = 'white';
         raycast.beginPath();
         raycast.moveTo(this.polygons[0].x, this.polygons[0].y);
         for(let i = 1; i < this.polygons.length; i++)
@@ -288,12 +295,12 @@ class RayVision
                 this.obstacleLines.push([[pointsAll[pointNr - 1][0], pointsAll[pointNr - 1][1]], [pointsAll[pointNr][0], pointsAll[pointNr][1]]]);
             }
         }
-       
+    /* 
         this.obstacleLines.push([[0, 0],[windowWidth, 0]],
                                 [[windowWidth, 0],[windowWidth, windowHeight]],
                                 [[windowWidth, windowHeight],[0, windowHeight]],
                                 [[0, windowHeight],[0, 0]]);
-        
+        */
     }
 
     castRays(uniqueAngles)
@@ -391,4 +398,4 @@ editor.makeFigure();    // that should works only in editor mode
 //$("document").on("keypress",  checkKey);
 
 document.addEventListener("keypress", checkKey);
-setInterval(function() { clearWindow(); editor.editor(); player.drawPlayer(); if(editor.editorMode == false) { player.rayCastingAlgorithm(); }; }, 1000/60);
+setInterval(function() { clearWindow(); editor.editor(); if(editor.editorMode == false) { player.rayCastingAlgorithm(); }; player.drawPlayer(); }, 1000/60);
