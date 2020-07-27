@@ -6,6 +6,9 @@ Application has editor mode in which user may create map. After switch editor mo
 object to see his field of view in real time on the map you create. 
 
 By default you're in **editor mode**
+
+![](raycasting.gif)
+
 **Control**:
 <ul> 
   <li> Left mouse button single click (in editor mode) - add new point to the obstacle polygon </li>
@@ -13,4 +16,4 @@ By default you're in **editor mode**
   <li> "e" button - to switch between editor mode and ray-casting mode </li>
 </ul>
 
-![](content/raycasting.gif)
+
